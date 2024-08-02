@@ -76,7 +76,7 @@ const PortalAwareItem = ({
         {...provided.dragHandleProps}
         className="rounded p-1 hover:cursor-move"
       >
-        <GripIcon className="text-foreground size-5" />
+        <GripIcon className="size-5 text-foreground" />
       </div>
       <Input value={field.shipmentProNumber} readOnly className="grow" />
       <Button
@@ -182,7 +182,7 @@ export function AssignmentDialog({
 
   return (
     <Credenza open={open} onOpenChange={onOpenChange}>
-      <CredenzaContent className="bg-background max-w-md">
+      <CredenzaContent className="max-w-md bg-background">
         <CredenzaHeader>
           <CredenzaTitle>Assignments: {selectedTractor.code}</CredenzaTitle>
         </CredenzaHeader>

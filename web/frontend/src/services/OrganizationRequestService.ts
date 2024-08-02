@@ -169,6 +169,8 @@ export async function getAuditLogs(
   entityId?: string,
   action?: string,
   status?: string,
+  limit?: number,
+  offset?: number,
 ): Promise<ApiResponse<AuditLog>> {
   const params: Record<string, string | undefined> = {};
 
@@ -177,6 +179,8 @@ export async function getAuditLogs(
   if (entityId) params.entityId = entityId;
   if (action) params.action = action;
   if (status) params.status = status;
+  if (limit) params.limit = limit.toString();
+  if (offset) params.offset = offset.toString();
 
   const response = await axios.get("audit-logs", { params });
 

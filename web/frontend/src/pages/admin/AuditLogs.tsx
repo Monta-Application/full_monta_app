@@ -49,9 +49,15 @@ import {
   type ColumnDef,
   flexRender,
   getCoreRowModel,
+  getPaginationRowModel,
+  PaginationState,
   useReactTable,
 } from "@tanstack/react-table";
 import { useState } from "react";
+import { DataTablePagination } from "@/components/common/table/data-table-pagination";
+import { useTableStore as store } from "@/stores/TableStore";
+import { Pagination } from "@/components/common/pagination";
+import { DataTable } from "@/components/common/data-table/data-table";
 
 function mapActionToBadge(action: AuditLogAction) {
   switch (action) {
@@ -142,9 +148,13 @@ function AuditLogTable() {
     action: undefined,
     status: undefined,
   });
+  const [pagination, setPagination] = useState<PaginationState>({
+    pageIndex: 0,
+    pageSize: 10,
+  });
 
   const { data, isLoading, isError } = useQuery({
-    queryKey: ["auditLogs", filters],
+    queryKey: ["auditLogs", filters, pagination.pageIndex, pagination.pageSize],
     queryFn: () =>
       getAuditLogs(
         filters.tableName,
@@ -152,15 +162,22 @@ function AuditLogTable() {
         filters.entityId,
         filters.action,
         filters.status,
+        pagination.pageSize,
+        pagination.pageIndex * pagination.pageSize,
       ),
   });
+
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const [currentRecord, setCurrentRecord] = useState<AuditLog | null>(null);
-
   const table = useReactTable({
     data: data?.results || [],
     columns,
+    pageCount: Math.ceil((data?.count || 0) / pagination.pageSize),
+    state: { pagination },
+    onPaginationChange: setPagination,
     getCoreRowModel: getCoreRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    manualPagination: true,
   });
 
   const handleFilterChange = (key: keyof typeof filters, value: string) => {
@@ -263,6 +280,7 @@ function AuditLogTable() {
           </TableBody>
         </Table>
       </Card>
+      <DataTablePagination table={table} pagination={pagination} />
       {viewDialogOpen && currentRecord && (
         <AuditLogDataDialog
           auditLog={currentRecord}
