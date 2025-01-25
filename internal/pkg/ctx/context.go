@@ -1,6 +1,8 @@
 package ctx
 
 import (
+	"context"
+
 	"github.com/emoss08/trenova/pkg/types/pulid"
 	"github.com/gofiber/fiber/v2"
 	"github.com/rotisserie/eris"
@@ -90,4 +92,15 @@ func WithRequestContext(c *fiber.Ctx) (*RequestContext, error) {
 	}
 
 	return ctx, nil
+}
+
+func FromContext(ctx context.Context) *RequestContext {
+	userID, ok := ctx.Value(CTXUserID).(pulid.ID)
+	if !ok {
+		return nil
+	}
+
+	return &RequestContext{
+		UserID: userID,
+	}
 }

@@ -19,5 +19,10 @@ func (r *mutationResolver) CreateOrganization(ctx context.Context, input generat
 
 // Organizations is the resolver for the organizations field.
 func (r *queryResolver) Organizations(ctx context.Context, includeBusinessUnit *bool) ([]*organization.Organization, error) {
-	panic(fmt.Errorf("not implemented: Organizations - organizations"))
+	orgs, err := r.orgRepo.List(ctx, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return orgs.Items, nil
 }
