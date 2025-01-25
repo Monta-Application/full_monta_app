@@ -65,3 +65,7 @@ tasks:
     cmd: swag init --parseDependency --parseInternal --parseDepth 1
   swag-fmt:
     cmd: swag fmt
+  gql-run:
+    cmd: go run ./cmd/gql/main.go gql-serve
+  gql-gen:
+    cmd: go run github.com/99designs/gqlgen generate

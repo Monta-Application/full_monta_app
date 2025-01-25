@@ -1,0 +1,67 @@
+enum OrganizationType
+  @goModel(
+    model: "github.com/emoss08/trenova/internal/core/domain/organization.Type"
+  ) {
+  CARRIER
+    @goEnum(
+      value: "github.com/emoss08/trenova/internal/core/domain/organization.TypeCarrier"
+    )
+  BROKERAGE
+    @goEnum(
+      value: "github.com/emoss08/trenova/internal/core/domain/organization.TypeBrokerage"
+    )
+  BROKERAGE_CARRIER
+    @goEnum(
+      value: "github.com/emoss08/trenova/internal/core/domain/organization.TypeBrokerageCarrier"
+    )
+}
+
+type Organization {
+  id: ID!
+  name: String!
+  scacCode: String!
+  dotNumber: String!
+  logoURL: String!
+  orgType: OrganizationType!
+  bucketName: String!
+  addressLine1: String!
+  addressLine2: String!
+  city: String!
+  postalCode: String!
+  timezone: String!
+  taxId: String!
+  primaryContact: String!
+  primaryEmail: String!
+  primaryPhone: String!
+  businessUnit: BusinessUnit
+  state: UsState
+  createdAt: Int64!
+  updatedAt: Int64!
+}
+
+input CreateOrganizationInput {
+  name: String!
+  scacCode: String!
+  dotNumber: String!
+  logoURL: String
+  orgType: OrganizationType!
+  addressLine1: String!
+  addressLine2: String
+  city: String!
+  postalCode: String!
+  timezone: String!
+  taxId: String
+  primaryContact: String
+  primaryEmail: String
+  primaryPhone: String
+  businessUnitId: ID!
+  stateId: ID!
+}
+
+extend type Query {
+  organizations(includeBusinessUnit: Boolean = false): [Organization!]!
+}
+
+extend type Mutation {
+  createOrganization(input: CreateOrganizationInput!): Organization!
+}

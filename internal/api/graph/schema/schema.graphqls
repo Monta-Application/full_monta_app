@@ -1,0 +1,20 @@
+# Scalar Types
+scalar Int64
+
+# Directive Types
+directive @goModel(
+  model: String
+  models: [String!]
+) on OBJECT | INPUT_OBJECT | SCALAR | ENUM | INTERFACE | UNION
+
+directive @goEnum(value: String) on ENUM_VALUE
+
+# Query Types
+type Query {
+  _empty: String
+}
+
+# Mutation Types
+type Mutation {
+  _empty: String
+}

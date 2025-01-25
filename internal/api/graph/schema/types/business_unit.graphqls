@@ -1,0 +1,19 @@
+type BusinessUnit {
+  id: ID!
+  name: String!
+  code: String!
+  description: String!
+  primaryContact: String
+  primaryEmail: String
+  primaryPhone: String
+  addressLine1: String
+  addressLine2: String
+  city: String
+  postalCode: String
+  timezone: String!
+  locale: String!
+  taxId: String
+  stateId: ID
+  createdAt: Int64!
+  updatedAt: Int64!
+}

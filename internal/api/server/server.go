@@ -4,26 +4,36 @@ import (
 	"context"
 	"time"
 
+	"github.com/99designs/gqlgen/graphql/handler"
+	"github.com/99designs/gqlgen/graphql/handler/extension"
+	"github.com/99designs/gqlgen/graphql/handler/lru"
+	"github.com/99designs/gqlgen/graphql/handler/transport"
 	"github.com/bytedance/sonic"
+	"github.com/emoss08/trenova/internal/api/graph/generated"
+	"github.com/emoss08/trenova/internal/api/graph/resolvers"
 	"github.com/emoss08/trenova/internal/pkg/config"
 	"github.com/emoss08/trenova/internal/pkg/logger"
 	"github.com/gofiber/fiber/v2"
 	"github.com/rotisserie/eris"
+	"github.com/vektah/gqlparser/v2/ast"
 	"go.uber.org/fx"
 )
 
 type Params struct {
 	fx.In
 
-	Lc     fx.Lifecycle
-	Config *config.Config
-	Logger *logger.Logger
+	Lc       fx.Lifecycle
+	Config   *config.Config
+	Logger   *logger.Logger
+	Resolver *resolvers.Resolver
 }
 
 type Server struct {
-	app *fiber.App
-	cfg *config.Config
-	l   *logger.Logger
+	app      *fiber.App
+	cfg      *config.Config
+	l        *logger.Logger
+	resolver *resolvers.Resolver
+	gqls     *handler.Server
 }
 
 func NewServer(p Params) *Server {
@@ -53,10 +63,25 @@ func NewServer(p Params) *Server {
 		ErrorHandler:       defaultErrorHandler(p.Logger),
 	})
 
+	// GraphQL server
+	srv := handler.New(generated.NewExecutableSchema(generated.Config{Resolvers: p.Resolver}))
+	srv.AddTransport(transport.Options{})
+	srv.AddTransport(transport.GET{})
+	srv.AddTransport(transport.POST{})
+
+	srv.SetQueryCache(lru.New[*ast.QueryDocument](1000))
+
+	srv.Use(extension.Introspection{})
+	srv.Use(extension.AutomaticPersistedQuery{
+		Cache: lru.New[string](100),
+	})
+
 	server := &Server{
-		app: app,
-		cfg: p.Config,
-		l:   p.Logger,
+		app:      app,
+		cfg:      p.Config,
+		l:        p.Logger,
+		resolver: p.Resolver,
+		gqls:     srv,
 	}
 
 	p.Lc.Append(fx.Hook{
@@ -100,6 +125,10 @@ func (s *Server) Stop(ctx context.Context) error {
 
 func (s *Server) Router() fiber.Router {
 	return s.app
+}
+
+func (s *Server) GraphQL() *handler.Server {
+	return s.gqls
 }
 
 func defaultErrorHandler(l *logger.Logger) fiber.ErrorHandler {

@@ -4,8 +4,10 @@ import (
 	"crypto/rand"
 	"database/sql/driver"
 	"fmt"
+	"io"
 	"time"
 
+	"github.com/bytedance/sonic"
 	"github.com/oklog/ulid/v2"
 	"github.com/rotisserie/eris"
 )
@@ -90,4 +92,27 @@ func MustParse(s string) (ID, error) {
 		return Nil, eris.Wrap(err, "pulid: failed to parse PULID")
 	}
 	return id, nil
+}
+
+func (u ID) MarshalGQL(w io.Writer) {
+	val, err := sonic.Marshal(u)
+	if err != nil {
+		panic(err)
+	}
+
+	w.Write(val)
+}
+
+func (u *ID) UnmarshalGQL(v any) error {
+	if v == nil {
+		return nil
+	}
+
+	val, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("pulid: unexpected type, %T", v)
+	}
+
+	*u = ID(val)
+	return nil
 }

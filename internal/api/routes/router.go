@@ -1,8 +1,11 @@
 package routes
 
 import (
+	"net/http"
 	"time"
 
+	gqlHandler "github.com/99designs/gqlgen/graphql/handler"
+	"github.com/99designs/gqlgen/graphql/playground"
 	authHandler "github.com/emoss08/trenova/internal/api/handlers/auth"
 	"github.com/emoss08/trenova/internal/api/handlers/commodity"
 	"github.com/emoss08/trenova/internal/api/handlers/documentqualityconfig"
@@ -30,6 +33,7 @@ import (
 	"github.com/emoss08/trenova/internal/pkg/logger"
 	"github.com/emoss08/trenova/internal/pkg/validator"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/adaptor"
 	"github.com/gofiber/fiber/v2/middleware/compress"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/encryptcookie"
@@ -84,16 +88,18 @@ type RouterParams struct {
 }
 
 type Router struct {
-	p   RouterParams
-	app fiber.Router
-	cfg *config.Manager
+	p       RouterParams
+	app     fiber.Router
+	cfg     *config.Manager
+	graphQL *gqlHandler.Server
 }
 
 func NewRouter(p RouterParams) *Router {
 	return &Router{
-		p:   p,
-		app: p.Server.Router(),
-		cfg: p.Config,
+		p:       p,
+		app:     p.Server.Router(),
+		cfg:     p.Config,
+		graphQL: p.Server.GraphQL(),
 	}
 }
 
@@ -114,6 +120,9 @@ func (r *Router) Setup() {
 
 	r.p.AuthHandler.RegisterRoutes(v1)
 	r.setupProtectedRoutes(v1, rl)
+
+	// GraphQL
+	r.setupGraphQLRoutes()
 }
 
 // setupMiddleware configures the global middleware stack
@@ -152,6 +161,24 @@ func (r *Router) setupMiddleware() {
 		requestid.New(),
 		idempotency.New(),
 	)
+}
+
+func (r *Router) graphQLHandler() http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		r.graphQL.ServeHTTP(w, req)
+	})
+}
+
+func (r *Router) graphQLPlaygroundHandler() http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		playground.Handler("GraphQL playground", "/graphql").ServeHTTP(w, req)
+	})
+}
+
+func (r *Router) setupGraphQLRoutes() {
+	r.app.All("/graphql", adaptor.HTTPHandler(r.graphQLHandler()))
+
+	r.app.Get("/graphql/playground", adaptor.HTTPHandler(r.graphQLPlaygroundHandler()))
 }
 
 // setupProtectedRoutes configures the protected routes

@@ -1,0 +1,58 @@
+schema:
+  - internal/api/graph/**/*.graphqls
+
+exec:
+  package: generated
+  layout: single-file # Only other option is "follow-schema," ie multi-file.
+
+  filename: internal/api/graph/generated/generated.go
+
+model:
+  filename: internal/api/graph/generated/models_gen.go
+  package: generated
+
+resolver:
+  package: resolvers
+  layout: follow-schema # Only other option is "single-file."
+
+  dir: internal/api/graph/resolvers
+  filename_template: "{name}.go"
+  preserve_resolver: true
+
+call_argument_directives_with_null: true
+
+autobind:
+  - "github.com/emoss08/trenova/internal/core/domain"
+
+# Models
+models:
+  Organization:
+    model: github.com/emoss08/trenova/internal/core/domain/organization.Organization
+  Audit:
+    model: github.com/emoss08/trenova/internal/core/domain/audit.Entry
+  BusinessUnit:
+    model: github.com/emoss08/trenova/internal/core/domain/businessunit.BusinessUnit
+  User:
+    model: github.com/emoss08/trenova/internal/core/domain/user.User
+  Permission:
+    model: github.com/emoss08/trenova/internal/core/domain/permission.Permission
+  UsState:
+    model: github.com/emoss08/trenova/internal/core/domain/usstate.UsState
+
+  # Scalars
+  ID:
+    model:
+      - github.com/emoss08/trenova/pkg/types/pulid.ID
+
+  UUID:
+    model:
+      - github.com/99designs/gqlgen/graphql.UUID
+
+  Int:
+    model:
+      - github.com/99designs/gqlgen/graphql.Int32
+
+  Int64:
+    model:
+      - github.com/99designs/gqlgen/graphql.Int
+      - github.com/99designs/gqlgen/graphql.Int64

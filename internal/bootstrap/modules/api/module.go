@@ -1,5 +1,8 @@
 package api
 
-import "go.uber.org/fx"
+import (
+	"github.com/emoss08/trenova/internal/api/graph/resolvers"
+	"go.uber.org/fx"
+)
 
-var Module = fx.Module("api", HandlersModule, ServerModule, RouterModule)
+var Module = fx.Module("api", resolvers.ResolversModule, HandlersModule, ServerModule, RouterModule)
